@@ -86,7 +86,8 @@ Restart ComfyUI and open `example_workflows/edenlive_render.json`. EdenLive's re
   ComfyUI's own decoder applies colour management and gives different RGB values. A video made from frames (Create Video) is passed
   losslessly.
 - **Length.** LightX2V keeps the decoded frames on the GPU until the end of a request and joins them there, so the GPU memory a
-  render needs grows with its length. Five-second clips are well within 32 GB.
+  render needs grows with its length. With `int8 + sage`, 5 s needed 21.1 GiB. The whole 30 s `cryo-crossing` sample (717 frames,
+  17.7 fps) peaked at 29.3 GiB reserved, so about 30 s is the limit on a 32 GB card.
 - **Cancel** stops at the next chunk boundary (every 12 frames; about 1 s after Cancel here).
 - The output has 4n+1 frames: up to 3 fewer than a 24 fps proxy.
 

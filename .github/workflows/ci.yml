@@ -1,0 +1,80 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# CPU only, no model and no LightX2V: the tests cover the profiles, model-folder detection, the lossless proxy writer, the
+# VIDEO handling, the one-runner rule, the model manifest and the node schemas, and a real ComfyUI must register the nodes.
+# The GPU checks (frames identical to LightX2V's command line through a real queue, a clean install with a real download) are
+# described in the README; they need the 34 GB model and an RTX-class GPU.
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest]
+        comfyui: ["v0.42.1"]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: ComfyUI-EdenLive-5090
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: ComfyUI checkout (pinned)
+        run: |
+          git -c core.autocrlf=false clone --quiet --depth 1 --branch "${{ matrix.comfyui }}" https://github.com/Comfy-Org/ComfyUI.git ComfyUI
+          if ((git -C ComfyUI rev-parse HEAD) -ne '63be2f9b82ad0dac88a7ceaa28a9cf3154125a18') { throw "ComfyUI commit mismatch" }
+
+      - name: Install (CPU)
+        run: |
+          $ErrorActionPreference = "Stop"
+          $PSNativeCommandUseErrorActionPreference = $true
+          python -m pip install --upgrade pip
+          pip install torch==2.14.1 torchvision==0.29.1 --index-url https://download.pytorch.org/whl/cpu
+          pip install -r ComfyUI/requirements.txt pytest ruff
+
+      - name: Lint
+        working-directory: ComfyUI-EdenLive-5090
+        run: ruff check .
+
+      - name: Tests
+        working-directory: ComfyUI-EdenLive-5090
+        env:
+          EDENLIVE_COMFYUI_DIR: ${{ github.workspace }}/ComfyUI
+        run: python -m pytest -v
+
+      - name: ComfyUI registers the nodes
+        run: |
+          $ErrorActionPreference = "Stop"
+          Copy-Item -Recurse ComfyUI-EdenLive-5090 ComfyUI/custom_nodes/ComfyUI-EdenLive-5090
+          $log = Join-Path $env:RUNNER_TEMP comfyui.log
+          $p = Start-Process python -ArgumentList "main.py", "--cpu", "--listen", "127.0.0.1", "--port", "8188" -WorkingDirectory ComfyUI -RedirectStandardOutput $log -RedirectStandardError "$log.err" -PassThru
+          try {
+            $info = $null
+            for ($i = 0; $i -lt 120 -and -not $info; $i++) {
+              Start-Sleep 2
+              try { $info = Invoke-RestMethod http://127.0.0.1:8188/object_info -TimeoutSec 10 } catch {}
+            }
+            foreach ($node in "EdenLiveLoader", "EdenLiveRender") {
+              if (-not $info -or -not $info.$node) { Get-Content $log, "$log.err"; throw "$node is not registered" }
+            }
+            "both nodes registered"
+          } finally {
+            Stop-Process -Id $p.Id -ErrorAction SilentlyContinue
+          }
