@@ -71,16 +71,18 @@ not offered.
    python custom_nodes/ComfyUI-EdenLive-5090/tools/prepare_model.py --models-dir models          # BF16 profiles
    python custom_nodes/ComfyUI-EdenLive-5090/tools/prepare_model.py --models-dir models --int8   # also int8 + sage
    ```
-   `--int8` runs LightX2V's quantizer on the GPU (`pip install qtorch ninja` first), which compiles a small C++ extension. On Windows, run it from an "x64 Native Tools"
-   prompt after `set PLATFORM=cuda`, because that prompt sets `Platform=x64`, which LightX2V would otherwise read as its platform.
+   `--int8` runs LightX2V's quantizer on the GPU (`pip install qtorch ninja` first), which compiles a small C++ extension. On
+   Windows, run it from an "x64 Native Tools" prompt after `set PLATFORM=cuda`: that prompt sets `Platform=x64`, which LightX2V would
+   otherwise read as its platform.
 
 Restart ComfyUI and open `example_workflows/edenlive_render.json`. EdenLive's repository has sample inputs in `examples/samples/`
 (`recording.mp4` as the proxy, `cover.png` as the first frame, the prompt in `manifest.csv`).
 
 ## Notes
 
-- **One model per session.** LightX2V does not give a loaded runner's GPU memory back inside the process. After the runner is
-  dropped, its 14 GiB of BF16 weights stay allocated, so a second one would spill into shared memory. Changing the model, profile or
+- **One model per session.** In my tests with LightX2V `d2d7424`, a runner's GPU memory was not given back inside the process:
+  after the runner was dropped and garbage-collected, its weights stayed allocated (14.2 GiB for BF16), so a second runner would
+  spill into shared memory. Changing the model, profile or
   text-encoder device therefore asks you to restart ComfyUI. ComfyUI's own models are unloaded before EdenLive loads.
 - **Proxy input.** A video from Load Video goes to LightX2V as the file itself, decoded exactly as its command line decodes it.
   ComfyUI's own decoder applies colour management and gives different RGB values. A video made from frames (Create Video) is passed
@@ -90,6 +92,31 @@ Restart ComfyUI and open `example_workflows/edenlive_render.json`. EdenLive's re
   17.7 fps) peaked at 29.3 GiB reserved, so about 30 s is the limit on a 32 GB card.
 - **Cancel** stops at the next chunk boundary (every 12 frames; about 1 s after Cancel here).
 - The output has 4n+1 frames: up to 3 fewer than a 24 fps proxy.
+
+## What was checked
+
+**Setup:** Windows 11, RTX 5090 (32 GB, driver 610.88), torch 2.14.1+cu130, ComfyUI v0.42.1 (frontend 1.55.18), LightX2V
+`d2d7424`, SageAttention 2.2.0 (Windows abi3 wheel).
+
+- **Same frames as LightX2V's command line.** A real ComfyUI queue (Load Video and Load Image → EdenLive → Save Image) saved
+  frames bit-identical to the frames `python -m lightx2v.infer --model_cls wan22_edenlive_ar` produced for the same files, prompt and
+  seed: 117 of 117, compared at 8 bits.
+  - The comparison is with LightX2V's EdenLive runner. VAST's original diffusers code documents 80 GB GPUs and FA4 kernels for
+    SM90, and was not run here.
+- **In the same queue:**
+  - A → B → A gives A again, exactly.
+  - Cancel stops at the next chunk (0.5–1 s); the next run is exact.
+  - Choosing another profile is refused with the restart message.
+  - A video made from frames (Create Video) renders.
+  - An empty prompt is rejected.
+- **Clean install:** a fresh ComfyUI v0.42.1 and venv, LightX2V from upstream at the pinned commit, a `git clone` of this
+  repository, then `tools/prepare_model.py --int8` with a real 34.2 GiB download, the conversion and the INT8 quantization.
+  - Every file was checked against its checksum.
+  - The converted and quantized weights were byte-identical to an earlier conversion (for the INT8 proxy encoder, every tensor;
+    only a path in its metadata differs).
+  - The queue checks above passed again on this installation, frames identical.
+- **Tests and CI:** 18 CPU tests (profiles, model folders, the lossless proxy writer, VIDEO handling, the one-model rule, the model
+  manifest), plus a check that ComfyUI registers the nodes. CI runs them on Ubuntu and Windows.
 
 ## Licence
 
