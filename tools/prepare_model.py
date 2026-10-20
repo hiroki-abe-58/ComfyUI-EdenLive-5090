@@ -109,8 +109,9 @@ def main():
     parser.add_argument("--int8", action="store_true", help="also write the INT8 ConvRot DiT and proxy encoder (GPU)")
     parser.add_argument("--download-only", action="store_true")
     args = parser.parse_args()
-    release = args.models_dir / "edenlive" / "_release" / f"{REPO.replace('/', '--')}"
-    output = args.models_dir / "edenlive" / args.name
+    models = args.models_dir.resolve()  # the quantizer runs in LightX2V's folder
+    release = models / "edenlive" / "_release" / f"{REPO.replace('/', '--')}"
+    output = models / "edenlive" / args.name
     download(release)
     if args.download_only:
         return
