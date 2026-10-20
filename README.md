@@ -109,7 +109,7 @@ Restart ComfyUI and open `example_workflows/edenlive_render.json`. EdenLive's re
 
 - **Same frames as LightX2V's command line.** A real ComfyUI queue (Load Video and Load Image → EdenLive → Save Image) saved
   frames bit-identical to the frames `python -m lightx2v.infer --model_cls wan22_edenlive_ar` produced for the same files, prompt and
-  seed: 117 of 117, compared at 8 bits.
+  seed: 117 of 117, compared at 8 bits, for each of the three profiles.
   - The comparison is with LightX2V's EdenLive runner. VAST's original diffusers code documents 80 GB GPUs and FA4 kernels for
     SM90, and was not run here.
 - **In the same queue:**
