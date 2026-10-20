@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 # CPU only, no model and no LightX2V: the tests cover the profiles, model-folder detection, the lossless proxy writer, the
-# VIDEO handling, the one-runner rule, the model manifest and the node schemas, and a real ComfyUI must register the nodes.
+# VIDEO handling, releasing a runner, the model manifest and the node schemas, and a real ComfyUI must register the nodes.
 # The GPU checks (frames identical to LightX2V's command line through a real queue, a clean install with a real download) are
 # described in the README; they need the 34 GB model and an RTX-class GPU.
 

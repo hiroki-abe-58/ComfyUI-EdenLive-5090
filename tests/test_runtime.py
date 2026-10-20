@@ -1,4 +1,8 @@
+import gc
 import os
+import sys
+import types
+import weakref
 
 import av
 import numpy as np
@@ -49,11 +53,57 @@ def test_msvc_platform_is_replaced(monkeypatch):
     assert os.environ["PLATFORM"] == "ascend_npu"
 
 
-def test_a_second_model_needs_a_restart(monkeypatch, tmp_path):
-    monkeypatch.setitem(runtime._state, "key", (str(tmp_path / "A"), "bf16 + sage", True))
-    monkeypatch.setitem(runtime._state, "runner", object())
-    with pytest.raises(RuntimeError, match="restart ComfyUI"):
-        runtime.load(str(tmp_path / "A"), "bf16 + pytorch kernels", True)
+class FakeRunner:
+    pass
+
+
+def test_release_frees_a_runner_frozen_in_a_cycle(comfy, monkeypatch):
+    runner = FakeRunner()
+    runner.self_ref = runner  # a reference cycle, only collectable by the GC
+    probe = weakref.ref(runner)
+    monkeypatch.setattr(runtime, "_state", {"key": ("A", "bf16 + sage", True), "runner": runner, "config_path": "c.json"})
+    del runner
+    gc.collect()
+    gc.freeze()  # as LightX2V does after the first request
+    try:
+        runtime.release()
+    finally:
+        gc.unfreeze()
+    assert probe() is None and runtime._state == {"key": None, "runner": None, "config_path": None}
+
+
+def test_a_runner_that_cannot_be_freed_stays_loaded(monkeypatch):
+    runner = FakeRunner()
+    state = {"key": ("A", "bf16 + sage", True), "runner": runner, "config_path": "c.json"}
+    monkeypatch.setattr(runtime, "_state", state)
+    with pytest.raises(RuntimeError, match="Restart ComfyUI"):
+        runtime.release()  # `runner` above still refers to it
+    assert state == {"key": ("A", "bf16 + sage", True), "runner": runner, "config_path": "c.json"}
+
+
+def test_stored_import_tracebacks_are_dropped(monkeypatch):
+    class Weights:
+        pass
+
+    def import_fails():
+        weights = Weights()
+        try:
+            try:
+                raise ModuleNotFoundError("first")
+            except ModuleNotFoundError:
+                raise ModuleNotFoundError("second")  # chained, like mxfp8_fuse's nested import
+        except ModuleNotFoundError as error:
+            module.STORED_ERROR = error
+        return weakref.ref(weights)
+
+    module = types.ModuleType("lightx2v._edenlive_test")
+    monkeypatch.setitem(sys.modules, module.__name__, module)
+    probe = import_fails()
+    gc.collect()
+    assert probe() is not None  # the traceback keeps import_fails' frame
+    runtime._drop_import_tracebacks()
+    gc.collect()
+    assert probe() is None and str(module.STORED_ERROR) == "second" and module.STORED_ERROR.__traceback__ is None
 
 
 def test_int8_profile_needs_the_quantized_files(monkeypatch, tmp_path):

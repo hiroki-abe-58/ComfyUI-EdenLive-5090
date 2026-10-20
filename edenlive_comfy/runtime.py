@@ -2,15 +2,19 @@
 
 The runner is built and called exactly as `python -m lightx2v.infer --model_cls wan22_edenlive_ar --task i2v` does (build_cli_inputs,
 build_runner, prepare_request, run_request), so a seed gives the frames the command line would write. One runner stays loaded
-and serves later requests until the model or profile changes, or Unload runs.
+and serves later requests; choosing another model, profile or text-encoder device releases it before the next one loads.
 """
 
 from __future__ import annotations
 
+import gc
+import importlib
 import json
 import logging
 import os
+import sys
 import tempfile
+import weakref
 from pathlib import Path
 
 import numpy as np
@@ -45,15 +49,35 @@ def _lightx2v():
     _prepare_environment()
     try:
         from lightx2v.infer import build_parser
-        from lightx2v.models.runners.runner_factory import build_runner
+        from lightx2v.models.runners.runner_factory import RUNNER_MODULES, build_runner
         from lightx2v.utils.set_config import build_cli_inputs
+
+        # here rather than on first use inside build_runner(), whose frame would then be kept (see _drop_import_tracebacks)
+        importlib.import_module(RUNNER_MODULES[MODEL_CLS])
     except ImportError as error:
         raise LightX2VMissing(
-            "LightX2V is not installed in ComfyUI's Python. Install the pinned version with "
-            "`pip install --no-deps \"lightx2v @ git+https://github.com/ModelTC/LightX2V@<commit>\"` and the packages in "
+            "LightX2V (or a package its EdenLive runner imports) is missing in ComfyUI's Python. Install LightX2V from a source "
+            "checkout at the tested commit d2d7424 with `pip install --no-deps -e LightX2V`, then the packages in "
             f"requirements-lightx2v.txt (see the README). Import error: {error}"
         ) from error
+    _drop_import_tracebacks()
     return build_parser, build_runner, build_cli_inputs
+
+
+def _drop_import_tracebacks():
+    """Keep LightX2V's stored optional-import errors, without their tracebacks.
+
+    A module that keeps the error of a failed optional import (lightx2v_kernel's MXFP8 GEMM, which has no Windows build) also keeps
+    its traceback, and with it the frames of whatever imported the module and everything those frames hold: in LightX2V d2d7424
+    that is build_runner() and the first runner it builds, which could then never be freed (ModelTC/LightX2V#1640).
+    """
+    for name, module in list(sys.modules.items()):
+        if module is None or name.partition(".")[0] != "lightx2v":
+            continue
+        for value in list(getattr(module, "__dict__", {}).values()):
+            if isinstance(value, BaseException) and (value.__traceback__ is not None or value.__context__ is not None):
+                value.__context__ = value.__cause__ = None
+                value.with_traceback(None)
 
 
 def _cli_args(build_parser, model_dir, config_path, prompt="", image="", video="", seed=0):
@@ -63,20 +87,37 @@ def _cli_args(build_parser, model_dir, config_path, prompt="", image="", video="
     ])
 
 
-def load(model_dir: str, profile: str, t5_on_cpu: bool):
-    """The runner for this model folder and profile, built once per ComfyUI session.
+def _describe(key) -> str:
+    return f"{os.path.basename(key[0])}, {key[1]}, t5_on_cpu={key[2]}"
 
-    Dropping a LightX2V runner does not give its weights' GPU memory back in the same process (measured: 14.2 GiB of BF16 weights
-    stay allocated after the runner is collected), so a second runner would sit on top of the first and spill into shared memory.
-    A different model or profile therefore needs a ComfyUI restart.
-    """
+
+def release():
+    """Drop the loaded runner and give its GPU memory back. If it cannot be freed, it stays loaded and a restart is needed."""
+    if _state["runner"] is None:
+        return
+    key, config_path = _state["key"], _state["config_path"]
+    probe = weakref.ref(_state["runner"])
+    _state.update(key=None, runner=None, config_path=None)
+    # After its first request LightX2V moves the whole object graph into the GC's permanent generation (gc.freeze()), where the
+    # runner's reference cycles are never collected.
+    gc.unfreeze()
+    gc.collect()
+    runner = probe()
+    if runner is not None:
+        _state.update(key=key, runner=runner, config_path=config_path)
+        raise RuntimeError(f"EdenLive ({_describe(key)}) could not be released in-process (something still refers to it), so a second "
+                           "model would not fit next to it. Restart ComfyUI to use another model, profile or text-encoder device.")
+    import comfy.model_management
+
+    comfy.model_management.soft_empty_cache()
+    logging.info("[EdenLive] released %s", _describe(key))
+
+
+def load(model_dir: str, profile: str, t5_on_cpu: bool):
+    """The runner for this model folder and profile. A loaded runner with other settings is released first."""
     key = (os.path.abspath(model_dir), profile, bool(t5_on_cpu))
     if _state["key"] == key:
         return _state["runner"], _state["config_path"]
-    if _state["key"] is not None:
-        loaded = f"{os.path.basename(_state['key'][0])}, {_state['key'][1]}, t5_on_cpu={_state['key'][2]}"
-        raise RuntimeError(f"EdenLive is already loaded with {loaded}. LightX2V cannot release a loaded model in-process, so restart "
-                           "ComfyUI to use another model, profile or text-encoder device.")
     missing = profiles.missing_modules(profile)
     if missing:
         raise RuntimeError(f"profile {profile!r} needs {', '.join(missing)}; install it or choose 'bf16 + pytorch kernels'")
@@ -86,6 +127,7 @@ def load(model_dir: str, profile: str, t5_on_cpu: bool):
         if not has_int8(model_dir):
             raise FileNotFoundError(f"profile {profile!r} needs the INT8 ConvRot files in {model_dir}/quantized (tools/prepare_model.py --int8)")
     build_parser, build_runner, build_cli_inputs = _lightx2v()
+    release()
     import comfy.model_management
 
     comfy.model_management.unload_all_models()

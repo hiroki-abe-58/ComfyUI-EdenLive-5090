@@ -80,10 +80,14 @@ Restart ComfyUI and open `example_workflows/edenlive_render.json`. EdenLive's re
 
 ## Notes
 
-- **One model per session.** In my tests with LightX2V `d2d7424`, a runner's GPU memory was not given back inside the process:
-  after the runner was dropped and garbage-collected, its weights stayed allocated (14.2 GiB for BF16), so a second runner would
-  spill into shared memory. Changing the model, profile or
-  text-encoder device therefore asks you to restart ComfyUI. ComfyUI's own models are unloaded before EdenLive loads.
+- **One model at a time.** EdenLive stays loaded between renders. Choosing another model, profile or text-encoder device first
+  releases the loaded one. ComfyUI's own models are unloaded before EdenLive loads.
+  - LightX2V `d2d7424` keeps a dropped runner alive in two ways, and the nodes handle both:
+    - An optional-import error it stores keeps its traceback, which holds the first runner
+      ([ModelTC/LightX2V#1640](https://github.com/ModelTC/LightX2V/pull/1640)).
+    - `gc.freeze()` takes the runner out of garbage collection after its first request.
+  - If a runner still cannot be freed, it stays loaded and the node asks you to restart ComfyUI. This avoids a second model
+    spilling into shared memory.
 - **Proxy input.** A video from Load Video goes to LightX2V as the file itself, decoded exactly as its command line decodes it.
   ComfyUI's own decoder applies colour management and gives different RGB values. A video made from frames (Create Video) is passed
   losslessly.
@@ -106,7 +110,9 @@ Restart ComfyUI and open `example_workflows/edenlive_render.json`. EdenLive's re
 - **In the same queue:**
   - A → B → A gives A again, exactly.
   - Cancel stops at the next chunk (0.5–1 s); the next run is exact.
-  - Choosing another profile is refused with the restart message.
+  - Switching from `int8 + sage` to `bf16 + sage` releases the INT8 runner. The new frames are identical to the command line's
+    for that profile. PyTorch's reserved memory goes from 9.8 GiB (INT8) to 14.3 GiB (BF16), not the sum of both.
+  - Switching back gives A again, exactly, at 9.8 GiB.
   - A video made from frames (Create Video) renders.
   - An empty prompt is rejected.
 - **Clean install:** a fresh ComfyUI v0.42.1 and venv, LightX2V from upstream at the pinned commit, a `git clone` of this
@@ -115,7 +121,7 @@ Restart ComfyUI and open `example_workflows/edenlive_render.json`. EdenLive's re
   - The converted and quantized weights were byte-identical to an earlier conversion (for the INT8 proxy encoder, every tensor;
     only a path in its metadata differs).
   - The queue checks above passed again on this installation, frames identical.
-- **Tests and CI:** 18 CPU tests (profiles, model folders, the lossless proxy writer, VIDEO handling, the one-model rule, the model
+- **Tests and CI:** 20 CPU tests (profiles, model folders, the lossless proxy writer, VIDEO handling, releasing a runner, the model
   manifest), plus a check that ComfyUI registers the nodes. CI runs them on Ubuntu and Windows.
 
 ## Licence

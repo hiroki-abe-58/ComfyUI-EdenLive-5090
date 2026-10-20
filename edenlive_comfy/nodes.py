@@ -21,8 +21,8 @@ class EdenLiveLoader(io.ComfyNode):
             display_name="EdenLive Loader",
             category="loaders/edenlive",
             description=("Loads EdenLive 5B (few-step, chunk-autoregressive) from models/edenlive/<name>/, converted to LightX2V's layout "
-                         "by tools/prepare_model.py. It stays loaded for the rest of the ComfyUI session (LightX2V cannot release it in-process); "
-                         "ComfyUI's own models are unloaded first."),
+                         "by tools/prepare_model.py. It stays loaded between renders; choosing another model, profile or text-encoder device "
+                         "releases it first. ComfyUI's own models are unloaded before it loads."),
             inputs=[
                 io.Combo.Input("model", options=paths.model_names()),
                 io.Combo.Input("profile", options=list(profiles.PROFILES), default="int8 + sage (fast)",
