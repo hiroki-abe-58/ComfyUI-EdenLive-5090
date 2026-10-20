@@ -1,0 +1,11 @@
+# LightX2V's EdenLive runner needs these on top of ComfyUI's own requirements (found by importing it in a fresh ComfyUI
+# v0.42.1 environment). LightX2V itself is installed separately with --no-deps (see the README): it is not on PyPI, and its
+# full dependency list pulls in server and cloud packages that the runner does not use.
+loguru
+imageio
+imageio-ffmpeg
+gguf
+pyzmq
+ftfy
+prometheus-client
+triton-windows; sys_platform == "win32"

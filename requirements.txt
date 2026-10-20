@@ -1,0 +1,1 @@
+# Nothing beyond ComfyUI's own packages for the nodes themselves; see requirements-lightx2v.txt and the README for LightX2V.

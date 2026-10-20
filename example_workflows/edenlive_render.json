@@ -1,0 +1,762 @@
+{
+ "id": "e5e39700-e969-4a4f-9c53-3eeffa702221",
+ "revision": 0,
+ "last_node_id": 6,
+ "last_link_id": 5,
+ "nodes": [
+  {
+   "id": 1,
+   "type": "LoadVideo",
+   "pos": [
+    40,
+    40
+   ],
+   "size": [
+    282.798828125,
+    229.53935546875002
+   ],
+   "flags": {},
+   "order": 0,
+   "mode": 0,
+   "showAdvanced": null,
+   "inputs": [
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "file",
+     "locked": null,
+     "name": "file",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "COMBO",
+     "widget": {
+      "name": "file"
+     },
+     "link": null
+    },
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "choose file to upload",
+     "locked": null,
+     "name": "upload",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "IMAGEUPLOAD",
+     "widget": {
+      "name": "upload"
+     },
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "VIDEO",
+     "locked": null,
+     "name": "VIDEO",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "VIDEO",
+     "pos": null,
+     "slot_index": null,
+     "links": [
+      2
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoadVideo"
+   },
+   "widgets_values": [
+    "recording.mp4",
+    "image"
+   ],
+   "widgets_values_named": {
+    "file": "recording.mp4",
+    "upload": "image"
+   }
+  },
+  {
+   "id": 2,
+   "type": "LoadImage",
+   "pos": [
+    40,
+    349.53935546875005
+   ],
+   "size": [
+    282.798828125,
+    314
+   ],
+   "flags": {},
+   "order": 1,
+   "mode": 0,
+   "showAdvanced": null,
+   "inputs": [
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "image",
+     "locked": null,
+     "name": "image",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "COMBO",
+     "widget": {
+      "name": "image"
+     },
+     "link": null
+    },
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "choose file to upload",
+     "locked": null,
+     "name": "upload",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "IMAGEUPLOAD",
+     "widget": {
+      "name": "upload"
+     },
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "IMAGE",
+     "locked": null,
+     "name": "IMAGE",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "IMAGE",
+     "pos": null,
+     "slot_index": null,
+     "links": [
+      3
+     ]
+    },
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "MASK",
+     "locked": null,
+     "name": "MASK",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "MASK",
+     "pos": null,
+     "slot_index": null,
+     "links": null
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoadImage"
+   },
+   "widgets_values": [
+    "cover.png",
+    "image"
+   ],
+   "widgets_values_named": {
+    "image": "cover.png",
+    "upload": "image"
+   }
+  },
+  {
+   "id": 3,
+   "type": "EdenLiveLoader",
+   "pos": [
+    40,
+    743.53935546875
+   ],
+   "size": [
+    270,
+    106
+   ],
+   "flags": {},
+   "order": 2,
+   "mode": 0,
+   "showAdvanced": null,
+   "inputs": [
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "model",
+     "locked": null,
+     "name": "model",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "COMBO",
+     "widget": {
+      "name": "model"
+     },
+     "link": null
+    },
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "profile",
+     "locked": null,
+     "name": "profile",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "COMBO",
+     "widget": {
+      "name": "profile"
+     },
+     "link": null
+    },
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "t5_on_cpu",
+     "locked": null,
+     "name": "t5_on_cpu",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "BOOLEAN",
+     "widget": {
+      "name": "t5_on_cpu"
+     },
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "edenlive",
+     "locked": null,
+     "name": "edenlive",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "EDENLIVE_MODEL",
+     "pos": null,
+     "slot_index": null,
+     "links": [
+      1
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "EdenLiveLoader"
+   },
+   "widgets_values": [
+    "EdenLive-5B",
+    "int8 + sage (fast)",
+    true
+   ],
+   "widgets_values_named": {
+    "model": "EdenLive-5B",
+    "profile": "int8 + sage (fast)",
+    "t5_on_cpu": true
+   }
+  },
+  {
+   "id": 4,
+   "type": "EdenLiveRender",
+   "pos": [
+    382.798828125,
+    40
+   ],
+   "size": [
+    400,
+    200
+   ],
+   "flags": {},
+   "order": 3,
+   "mode": 0,
+   "showAdvanced": null,
+   "inputs": [
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "edenlive",
+     "locked": null,
+     "name": "edenlive",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "EDENLIVE_MODEL",
+     "pos": null,
+     "link": 1
+    },
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "proxy",
+     "locked": null,
+     "name": "proxy",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "VIDEO",
+     "pos": null,
+     "link": 2
+    },
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "first_frame",
+     "locked": null,
+     "name": "first_frame",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "IMAGE",
+     "pos": null,
+     "link": 3
+    },
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "prompt",
+     "locked": null,
+     "name": "prompt",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "STRING",
+     "widget": {
+      "name": "prompt"
+     },
+     "link": null
+    },
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "seed",
+     "locked": null,
+     "name": "seed",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "INT",
+     "widget": {
+      "name": "seed"
+     },
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "frames",
+     "locked": null,
+     "name": "frames",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "IMAGE",
+     "pos": null,
+     "slot_index": null,
+     "links": [
+      4
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "EdenLiveRender"
+   },
+   "widgets_values": [
+    "Cinematic photorealism. A vast volcanic cavern dominated by a churning, incandescent molten lava lake, dark basalt formations, and jagged stalactites. Dynamic heat haze and glowing orange embers fill the air. Seen from a first-person viewpoint, a heavy industrial cryo-blaster with frosted metallic plating and cyan energy vents is held ready. Projectiles flash-freeze bubbling magma into dense slabs of hissing glacial ice. Dramatic lighting balances intense fiery magma radiance against cool cyan cryo luminescence.",
+    2026092901,
+    "fixed"
+   ],
+   "widgets_values_named": {
+    "prompt": "Cinematic photorealism. A vast volcanic cavern dominated by a churning, incandescent molten lava lake, dark basalt formations, and jagged stalactites. Dynamic heat haze and glowing orange embers fill the air. Seen from a first-person viewpoint, a heavy industrial cryo-blaster with frosted metallic plating and cyan energy vents is held ready. Projectiles flash-freeze bubbling magma into dense slabs of hissing glacial ice. Dramatic lighting balances intense fiery magma radiance against cool cyan cryo luminescence.",
+    "seed": 2026092901,
+    "control_after_generate": "fixed"
+   }
+  },
+  {
+   "id": 5,
+   "type": "CreateVideo",
+   "pos": [
+    842.798828125,
+    40
+   ],
+   "size": [
+    270,
+    150
+   ],
+   "flags": {},
+   "order": 4,
+   "mode": 0,
+   "showAdvanced": null,
+   "inputs": [
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "images",
+     "locked": null,
+     "name": "images",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "IMAGE",
+     "pos": null,
+     "link": 4
+    },
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "audio",
+     "locked": null,
+     "name": "audio",
+     "nameLocked": null,
+     "removable": null,
+     "shape": 7,
+     "type": "AUDIO",
+     "pos": null,
+     "link": null
+    },
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "fps",
+     "locked": null,
+     "name": "fps",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "FLOAT",
+     "widget": {
+      "name": "fps"
+     },
+     "link": null
+    },
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "bit_depth",
+     "locked": null,
+     "name": "bit_depth",
+     "nameLocked": null,
+     "removable": null,
+     "shape": 7,
+     "type": "COMBO",
+     "widget": {
+      "name": "bit_depth"
+     },
+     "link": null
+    },
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "color_space",
+     "locked": null,
+     "name": "color_space",
+     "nameLocked": null,
+     "removable": null,
+     "shape": 7,
+     "type": "COMBO",
+     "widget": {
+      "name": "color_space"
+     },
+     "link": null
+    },
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "codec",
+     "locked": null,
+     "name": "codec",
+     "nameLocked": null,
+     "removable": null,
+     "shape": 7,
+     "type": "COMBO",
+     "widget": {
+      "name": "codec"
+     },
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "VIDEO",
+     "locked": null,
+     "name": "VIDEO",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "VIDEO",
+     "pos": null,
+     "slot_index": null,
+     "links": [
+      5
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "CreateVideo"
+   },
+   "widgets_values": [
+    24,
+    "auto",
+    "sRGB",
+    "none"
+   ],
+   "widgets_values_named": {
+    "fps": 24,
+    "bit_depth": "auto",
+    "color_space": "sRGB",
+    "codec": "none"
+   }
+  },
+  {
+   "id": 6,
+   "type": "SaveVideo",
+   "pos": [
+    1172.798828125,
+    40
+   ],
+   "size": [
+    270,
+    106
+   ],
+   "flags": {},
+   "order": 5,
+   "mode": 0,
+   "showAdvanced": null,
+   "inputs": [
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "video",
+     "locked": null,
+     "name": "video",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "VIDEO",
+     "pos": null,
+     "link": 5
+    },
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "filename_prefix",
+     "locked": null,
+     "name": "filename_prefix",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "STRING",
+     "widget": {
+      "name": "filename_prefix"
+     },
+     "link": null
+    },
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "format",
+     "locked": null,
+     "name": "format",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "COMFY_DYNAMICCOMBO_V3",
+     "widget": {
+      "name": "format"
+     },
+     "link": null
+    },
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "codec",
+     "locked": null,
+     "name": "format.codec",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "COMFY_DYNAMICCOMBO_V3",
+     "widget": {
+      "name": "format.codec"
+     },
+     "link": null
+    },
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "codec",
+     "locked": null,
+     "name": "codec",
+     "nameLocked": null,
+     "removable": null,
+     "shape": 7,
+     "type": "COMFY_DYNAMICCOMBO_V3",
+     "widget": {
+      "name": "codec"
+     },
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "color_off": null,
+     "color_on": null,
+     "dir": null,
+     "label": null,
+     "localized_name": "video",
+     "locked": null,
+     "name": "video",
+     "nameLocked": null,
+     "removable": null,
+     "shape": null,
+     "type": "VIDEO",
+     "pos": null,
+     "slot_index": null,
+     "links": null
+    }
+   ],
+   "properties": {},
+   "widgets_values": [
+    "video/edenlive",
+    "mp4",
+    "auto",
+    "auto"
+   ],
+   "widgets_values_named": {
+    "filename_prefix": "video/edenlive",
+    "format": "mp4",
+    "format.codec": "auto",
+    "codec": "auto"
+   }
+  }
+ ],
+ "links": [
+  [
+   1,
+   3,
+   0,
+   4,
+   0,
+   "EDENLIVE_MODEL"
+  ],
+  [
+   2,
+   1,
+   0,
+   4,
+   1,
+   "VIDEO"
+  ],
+  [
+   3,
+   2,
+   0,
+   4,
+   2,
+   "IMAGE"
+  ],
+  [
+   4,
+   4,
+   0,
+   5,
+   0,
+   "IMAGE"
+  ],
+  [
+   5,
+   5,
+   0,
+   6,
+   0,
+   "VIDEO"
+  ]
+ ],
+ "floatingLinks": null,
+ "groups": [],
+ "definitions": null,
+ "config": {},
+ "extra": {
+  "ds": {
+   "scale": 1,
+   "offset": [
+    0,
+    0
+   ]
+  },
+  "reroutes": null
+ },
+ "version": 0.4
+}

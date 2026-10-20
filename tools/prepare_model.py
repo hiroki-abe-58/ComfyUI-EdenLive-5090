@@ -84,6 +84,11 @@ def convert(release: Path, output: Path, root: Path):
 
 
 def quantize(output: Path, root: Path):
+    import importlib.util
+
+    missing = [name for name in ("qtorch", "ninja") if importlib.util.find_spec(name) is None]
+    if missing:
+        raise SystemExit(f"--int8 runs LightX2V's quantizer, which needs {' and '.join(missing)}: pip install qtorch ninja")
     env = dict(os.environ, PYTHONPATH=os.pathsep.join(filter(None, [str(root), os.environ.get("PYTHONPATH")])))
     quantized = output / "quantized"
     if not (quantized / "dit-5b-int8-convrot.safetensors").is_file():
