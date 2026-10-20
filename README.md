@@ -10,6 +10,11 @@ the frames `python -m lightx2v.infer --model_cls wan22_edenlive_ar` writes. Meas
 
 This is an unofficial integration, not affiliated with VAST, ModelTC or Comfy Org.
 
+![proxy frames and the rendered frames at the same times](docs/images/proxy_and_render.jpg)
+
+The images above come from the first 5 s of EdenLive's `cryo-crossing` sample. The render used its `cover.png` as the first frame, its
+prompt, seed 2026092901 and the `int8 + sage` profile.
+
 ![example workflow](docs/images/edenlive_render.png)
 
 ## Nodes
