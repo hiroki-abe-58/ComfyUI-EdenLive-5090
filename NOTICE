@@ -1,0 +1,17 @@
+EdenLive 5B for ComfyUI
+=======================
+
+The code in this repository is MIT-licensed (see LICENSE). It contains no model weights and no third-party code; it calls the
+following projects, which are installed or downloaded separately and keep their own licenses:
+
+- LightX2V (https://github.com/ModelTC/LightX2V), Apache License 2.0: the EdenLive runner, kernels and conversion tools.
+- EdenLive (https://github.com/VAST-AI-Research/EdenLive, weights https://huggingface.co/VAST-AI/EdenLive), Copyright (c) 2026
+  Vast AI. tools/prepare_model.py downloads these parts of the release:
+  - dit-5b, vae-5b, umt5, scheduler-5b, decoder-5b: Apache License 2.0 (derived from Wan2.1 / Wan2.2; decoder-5b is LightX2V's
+    LightTAE).
+  - vision-encoder (backbone and projection.safetensors): DINOv3 by Meta Platforms, Inc. or derivative works of it made by Vast
+    AI, distributed under the DINOv3 License (https://github.com/facebookresearch/dinov3/blob/main/LICENSE.md), not under
+    Apache 2.0. Using these weights means accepting that license, including its trade-control and prohibited-use terms;
+    publications that use them must acknowledge DINOv3.
+  The 14B and bidirectional models, CLIP and the FLUX workbench model (FLUX Non-Commercial License) are not downloaded.
+- SageAttention (https://github.com/thu-ml/SageAttention), Apache License 2.0, optional.

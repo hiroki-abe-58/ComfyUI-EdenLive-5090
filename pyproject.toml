@@ -1,0 +1,20 @@
+[project]
+name = "edenlive-5090"
+description = "EdenLive 5B for ComfyUI: render a proxy video (greybox, game capture, any reference) into the look of a first frame and a prompt, through LightX2V's EdenLive runner. Tuned and measured on an RTX 5090 under Windows."
+version = "0.1.0"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/hiroki-abe-58/ComfyUI-EdenLive-5090"
+
+[tool.ruff]
+line-length = 160
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
