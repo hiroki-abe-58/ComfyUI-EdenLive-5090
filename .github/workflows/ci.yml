@@ -36,10 +36,13 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: ComfyUI checkout (pinned)
+      - name: ComfyUI and EdenLive checkouts (pinned)
         run: |
           git -c core.autocrlf=false clone --quiet --depth 1 --branch "${{ matrix.comfyui }}" https://github.com/Comfy-Org/ComfyUI.git ComfyUI
           if ((git -C ComfyUI rev-parse HEAD) -ne '63be2f9b82ad0dac88a7ceaa28a9cf3154125a18') { throw "ComfyUI commit mismatch" }
+          # EdenLive itself, for the timed-prompt rule (edenlive/data/recording_manifest.py) and its two sample prompts.json
+          git -c core.autocrlf=false clone --quiet --filter=blob:none https://github.com/VAST-AI-Research/EdenLive.git EdenLive
+          git -C EdenLive -c core.autocrlf=false checkout --quiet 0b78d211bfa87b6d9b6281e9e36e55b974fe7bec
 
       - name: Install (CPU)
         run: |
@@ -57,6 +60,8 @@ jobs:
         working-directory: ComfyUI-EdenLive-5090
         env:
           EDENLIVE_COMFYUI_DIR: ${{ github.workspace }}/ComfyUI
+          EDENLIVE_UPSTREAM_DIR: ${{ github.workspace }}/EdenLive
+          EDENLIVE_REQUIRE_REFERENCES: "1"
         run: python -m pytest -v
 
       - name: ComfyUI registers the nodes

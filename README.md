@@ -22,9 +22,24 @@ prompt, seed 2026092901 and the `int8 + sage` profile.
 | Node | What it does |
 | --- | --- |
 | **EdenLive Loader** | A model folder in `models/edenlive/`, a kernel profile, and where the UMT5 text encoder runs. |
-| **EdenLive Render** | `proxy` (a VIDEO, e.g. from Load Video), `first_frame` (IMAGE), `prompt`, `seed` → the rendered frames (IMAGE, 24 fps). |
+| **EdenLive Render** | `proxy` (a VIDEO, e.g. from Load Video), `first_frame` (IMAGE), `prompt`, `seed` → the rendered frames (IMAGE, 24 fps) and the prompt of every chunk (`schedule`). Optional: `prompt_schedule` (timed prompts), `preview` (each decoded chunk shows up in the progress preview as it arrives). |
 
-Save the frames with Create Video (fps 24) and Save Video. The example workflow is in `example_workflows/`.
+Save the frames with Create Video (fps 24) and Save Video. The example workflows are in `example_workflows/`.
+
+### Timed prompts
+
+`prompt_schedule` changes the text over time, the way EdenLive's own recordings describe it. It takes either
+
+- the content of an EdenLive `prompts.json` (a `staticPrompt` and timed `dynamicPrompts` with `startMs`, `endMs`, `text`), as in
+  EdenLive's `examples/samples/*/prompts.json`, or
+- one event per line, `<start>: text`, with the start in frames at 24 fps (`48: ...`), seconds (`2s: ...`) or milliseconds
+  (`2000ms: ...`); each event lasts until the next one, and `prompt` is the static part.
+
+The model renders in chunks of 12 frames, and each chunk gets one prompt: the static prompt followed by the text of every event that
+overlaps the chunk. That is EdenLive's own rule for its chunk-autoregressive model (`prompt_schedule` in
+`edenlive/data/recording_manifest.py`); the pack's version gives the same prompts as EdenLive's on both shipped samples (CI). The
+schedule reaches LightX2V as its `prompt_travel` setting for that one render, so it does not affect the next one. The `schedule`
+output lists the chunks with their frames and prompts.
 
 ## Profiles
 
