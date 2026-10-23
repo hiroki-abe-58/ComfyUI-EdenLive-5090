@@ -187,20 +187,35 @@ def _rate(fps: float):
     return Fraction(fps).limit_denominator(1001)
 
 
+def preview_image(pixels: torch.Tensor):
+    """The last frame of a decoded chunk ((B, C, T, H, W) in -1..1, as LightX2V hands it to the chunk callback) as a PIL image."""
+    from PIL import Image
+
+    frame = ((pixels[0, :, -1].float().clamp(-1, 1) + 1) * 127.5).round().to(torch.uint8).permute(1, 2, 0).cpu().numpy()
+    return Image.fromarray(frame)
+
+
 def write_image(image: torch.Tensor, path: str):
     from PIL import Image
 
     Image.fromarray((image[0].clamp(0, 1) * 255).round().to(torch.uint8).cpu().numpy()).save(path)
 
 
-def render(runner, model_dir, config_path, proxy_path, cover_path, prompt, seed, on_chunk=None) -> torch.Tensor:
-    """Frames [T, H, W, 3] float32 in 0..1 on the CPU; the same request as the command line with these files."""
+def render(runner, model_dir, config_path, proxy_path, cover_path, prompt, seed, on_chunk=None, prompt_travel=None) -> torch.Tensor:
+    """Frames [T, H, W, 3] float32 in 0..1 on the CPU; the same request as the command line with these files (and, with
+    prompt_travel, the same as a config file that has this prompt_travel entry)."""
     build_parser, _, build_cli_inputs = _lightx2v()
     _, request = build_cli_inputs(_cli_args(build_parser, model_dir, config_path, prompt, cover_path, proxy_path, seed))
-    info = runner.prepare_request(request)
-    runner.set_chunk_callback(on_chunk)
+    if prompt_travel is not None:
+        with runner.config.temporarily_unlocked():
+            runner.config["prompt_travel"] = prompt_travel
     try:
+        info = runner.prepare_request(request)
+        runner.set_chunk_callback(on_chunk)
         video = runner.run_request(info)["video"]
     finally:
         runner.set_chunk_callback(None)
+        if prompt_travel is not None:
+            with runner.config.temporarily_unlocked():
+                runner.config.pop("prompt_travel", None)
     return video.to(torch.float32)
