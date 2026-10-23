@@ -22,9 +22,24 @@ prompt, seed 2026092901 and the `int8 + sage` profile.
 | Node | What it does |
 | --- | --- |
 | **EdenLive Loader** | A model folder in `models/edenlive/`, a kernel profile, and where the UMT5 text encoder runs. |
-| **EdenLive Render** | `proxy` (a VIDEO, e.g. from Load Video), `first_frame` (IMAGE), `prompt`, `seed` → the rendered frames (IMAGE, 24 fps). |
+| **EdenLive Render** | `proxy` (a VIDEO, e.g. from Load Video), `first_frame` (IMAGE), `prompt`, `seed` → the rendered frames (IMAGE, 24 fps) and the prompt of every chunk (`schedule`). Optional: `prompt_schedule` (timed prompts), `preview` (each decoded chunk shows up in the progress preview as it arrives). |
 
-Save the frames with Create Video (fps 24) and Save Video. The example workflow is in `example_workflows/`.
+Save the frames with Create Video (fps 24) and Save Video. The example workflows are in `example_workflows/`.
+
+### Timed prompts
+
+`prompt_schedule` changes the text over time, the way EdenLive's own recordings describe it. It takes either
+
+- the content of an EdenLive `prompts.json` (a `staticPrompt` and timed `dynamicPrompts` with `startMs`, `endMs`, `text`), as in
+  EdenLive's `examples/samples/*/prompts.json`, or
+- one event per line, `<start>: text`, with the start in frames at 24 fps (`48: ...`), seconds (`2s: ...`) or milliseconds
+  (`2000ms: ...`); each event lasts until the next one, and `prompt` is the static part.
+
+The model renders in chunks of 12 frames, and each chunk gets one prompt: the static prompt followed by the text of every event that
+overlaps the chunk. That is EdenLive's own rule for its chunk-autoregressive model (`prompt_schedule` in
+`edenlive/data/recording_manifest.py`); the pack's version gives the same prompts as EdenLive's on both shipped samples (CI). The
+schedule reaches LightX2V as its `prompt_travel` setting for that one render, so it does not affect the next one. The `schedule`
+output lists the chunks with their frames and prompts.
 
 ## Profiles
 
@@ -109,6 +124,12 @@ Restart ComfyUI and open `example_workflows/edenlive_render.json`. EdenLive's re
 **Setup:** Windows 11, RTX 5090 (32 GB, driver 610.88), torch 2.14.1+cu130, ComfyUI v0.42.1 (frontend 1.55.18), LightX2V
 `d2d7424`, SageAttention 2.2.0 (Windows abi3 wheel).
 
+- **Timed prompts (0.2.0) give the command line's frames too.** EdenLive Render with `prompt_schedule` = the `prompts.json` of
+  EdenLive's `cryo-crossing` sample (first 5 s, `int8 + sage`, seed 2026092901) saved 117 frames bit-identical to
+  `lightx2v.infer` with the same profile config plus the `prompt_travel` the node derives (3 texts, starting at frames 0, 60 and
+  72). The same render without previews gave the same frames, and a render with one prompt right after it matched the command
+  line without a schedule, so the schedule does not stay on the runner. A schedule with decreasing times is rejected before
+  rendering. 30 s for the timed render, 13–14 s for the following ones (runner loaded).
 - **Same frames as LightX2V's command line.** A real ComfyUI queue (Load Video and Load Image → EdenLive → Save Image) saved
   frames bit-identical to the frames `python -m lightx2v.infer --model_cls wan22_edenlive_ar` produced for the same files, prompt and
   seed: 117 of 117, compared at 8 bits, for each of the three profiles.
