@@ -124,6 +124,12 @@ Restart ComfyUI and open `example_workflows/edenlive_render.json`. EdenLive's re
 **Setup:** Windows 11, RTX 5090 (32 GB, driver 610.88), torch 2.14.1+cu130, ComfyUI v0.42.1 (frontend 1.55.18), LightX2V
 `d2d7424`, SageAttention 2.2.0 (Windows abi3 wheel).
 
+- **Timed prompts (0.2.0) give the command line's frames too.** EdenLive Render with `prompt_schedule` = the `prompts.json` of
+  EdenLive's `cryo-crossing` sample (first 5 s, `int8 + sage`, seed 2026092901) saved 117 frames bit-identical to
+  `lightx2v.infer` with the same profile config plus the `prompt_travel` the node derives (3 texts, starting at frames 0, 60 and
+  72). The same render without previews gave the same frames, and a render with one prompt right after it matched the command
+  line without a schedule, so the schedule does not stay on the runner. A schedule with decreasing times is rejected before
+  rendering. 30 s for the timed render, 13–14 s for the following ones (runner loaded).
 - **Same frames as LightX2V's command line.** A real ComfyUI queue (Load Video and Load Image → EdenLive → Save Image) saved
   frames bit-identical to the frames `python -m lightx2v.infer --model_cls wan22_edenlive_ar` produced for the same files, prompt and
   seed: 117 of 117, compared at 8 bits, for each of the three profiles.
